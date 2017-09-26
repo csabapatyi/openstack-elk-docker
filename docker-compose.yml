@@ -1,0 +1,123 @@
+version: '2'
+services:
+  elasticsearch1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.5.0
+    container_name: elasticsearch1
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.5.0
+    container_name: elasticsearch2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch1"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - esdata2:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+  logstash1:
+    # build:
+    #   context: ./logstash/
+    # image: componentsoft_logstash:v5.5.0
+    image: docker.elastic.co/logstash/logstash:5.5.0
+    container_name: logstash
+    hostname: logstash
+    user: logstash
+#    restart: always
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"      
+    #mem_limit: 1g
+    mem_limit: 600m
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - /var/ELK-stack/logstash/patterns:/usr/share/logstash/my_patterns/
+      - /var/ELK-stack/logstash/pipeline/:/usr/share/logstash/pipeline/
+      - /var/ELK-stack/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - lsdata1:/usr/share/logstash/data/
+    ports:
+      - 5044:5044
+    networks:
+      - esnet
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.5.0
+    container_name: kibana
+    hostname: kibana        
+    user: kibana
+#    restart: always
+    environment:
+      SERVER_NAME: kibana
+      SERVER_PORT: 5601
+      XPACK_SECURITY_ENABLED: "false"
+      XPACK_MONITORING_UI_CONTAINER_ELASTICSEARCH_ENABLED: "false"
+      XPACK_MONITORING_ENABLED: "false"
+      ELASTICSEARCH_URL: http://elasticsearch1:9200
+    ports:
+      - "5601:5601"
+    networks:
+        - esnet    
+    volumes:
+      #- /var/ELK-stack/kibana/config:/usr/share/kibana/config/
+      - kidata1:/usr/share/kibana/data/    
+
+
+
+volumes:
+  esdata1:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/ELK-stack/elasticsearch/data1
+      o: bind,uid=elasticsearch,gid=elasticsearch
+
+  esdata2:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/ELK-stack/elasticsearch/data2
+      o: bind,uid=elasticsearch,gid=elasticsearch
+
+  lsdata1:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/ELK-stack/logstash/data
+      o: bind,uid=logstash,gid=logstash
+  
+  kidata1:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/ELK-stack/kibana/data
+      o: bind,uid=kibana,gid=kibana
+
+
+networks:
+  esnet:
+    driver: bridge

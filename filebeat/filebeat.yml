@@ -1,0 +1,140 @@
+filebeat:
+  prospectors:
+    -
+      paths:
+        - "/var/log/syslog"
+        - "/var/log/auth.log"
+      exclude_files: ['\.gz$']
+      document_type: syslog
+      tags: [host_node, syslog]
+    -
+      paths:
+        - "/var/log/nova/*.log"
+      exclude_files: ['\.gz$']
+      document_type: nova
+      tags: [openstack_service_logs, nova]
+    -
+      paths:
+        - "/var/log/neutron/*.log"
+      document_type: neutron
+      exclude_files: ['\.gz$']      
+      multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} [0-9]+ (ERROR|WARNING|INFO|DEBUG|TRACE) [0-9A-Za-z._]+ \['
+      multiline.negate: true
+      multiline.match: after
+      tags: [openstack_service_logs, neutron]
+    -
+      paths:
+        - "/var/log/cinder/*.log"
+      exclude_files: ['\.gz$']
+      document_type: cinder      
+      multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} [0-9]+ (ERROR|WARNING|INFO|DEBUG|TRACE) [0-9A-Za-z._]+ \['
+      multiline.negate: true
+      multiline.match: after
+      tags: [openstack_service_logs, cinder]
+    -
+      paths:
+        - "/var/log/glance/*.log"
+      exclude_files: ['\.gz$']
+      document_type: glance 
+      multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} [0-9]+ (ERROR|WARNING|INFO|DEBUG|TRACE) [0-9A-Za-z._]+ \['
+      multiline.negate: true
+      multiline.match: after     
+      tags: [openstack_service_logs, glance]
+    -
+      paths:
+        - "/var/log/heat/*.log"
+      exclude_files: ['\.gz$']
+      document_type: heat   
+      multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} [0-9]+ (ERROR|WARNING|INFO|DEBUG|TRACE) [0-9A-Za-z._]+ \['
+      multiline.negate: true
+      multiline.match: after   
+      tags: [openstack_service_logs, heat]
+    -
+      paths:
+        - "/var/log/httpd/*.log"
+      exclude_files: ['\.gz$']
+      document_type: http
+    -
+      paths:
+        - "/var/log/horizon/*.log"
+      exclude_files: ['\.gz$']
+      document_type: horizon
+      multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} [0-9]+ (ERROR|WARNING|INFO|DEBUG|TRACE) [0-9A-Za-z._]+ \['
+      multiline.negate: true
+      multiline.match: after
+      tags: [openstack_service_logs, horizon]
+    -
+      paths:
+        - "/var/log/keystone/*.log"
+      exclude_files: ['\.gz$']
+      document_type: keystone            
+      multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} [0-9]+ (ERROR|WARNING|INFO|DEBUG|TRACE) [0-9A-Za-z._]+ \['
+      multiline.negate: true
+      multiline.match: after
+      tags: [openstack_service_logs, keystone]
+    -
+      paths:
+        - "/var/log/mariadb/*.log"
+      exclude_files: ['\.gz$']
+      document_type: mariadb      
+      tags: [openstack_backend_service, database, mariadb]
+    -
+      paths:
+        - "/var/log/messages"
+      exclude_files: ['\.gz$']
+      document_type: syslog
+      tags: [host_node, syslog]
+    -
+      paths:
+        - "/var/log/mongodb/*.log"
+      exclude_files: ['\.gz$']
+      document_type: mongodb
+      tags: [openstack_backend_service, mongodb]
+    -
+      paths:
+        - "/var/log/openvswitch/*.log"
+      exclude_files: ['\.gz$']
+      document_type: openvswitch
+      multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} [0-9]+ (ERROR|WARNING|INFO|DEBUG|TRACE) [0-9A-Za-z._]+ \['
+      multiline.negate: true
+      multiline.match: after
+      tags: [openstack_network_driver, openvswitch]
+    -
+      paths:
+        - "/var/log/pacemaker.log"
+      exclude_files: ['\.gz$']
+      document_type: pacemaker
+    -
+      paths:
+        - "/var/log/ceilometer/*.log"
+      exclude_files: ['\.gz$']
+      document_type: ceilometer      
+      multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3} [0-9]+ (ERROR|WARNING|INFO|DEBUG|TRACE) [0-9A-Za-z._]+ \['
+      multiline.negate: true
+      multiline.match: after
+      tags: [openstack_service_logs, keystone]
+    -
+      paths:
+        - "/var/log/cron"
+      exclude_files: ['\.gz$']
+      document_type: cron
+    -
+      paths:
+        - "/var/log/rabbitmq/*.log-2*"
+      exclude_files: ['\.gz$']
+      document_type: rabbitmq
+      tags: [openstack_backend_service, amqp, rabbitmq]
+    -
+      paths:
+        - "/var/log/libvirt/*.log"
+      exclude_files: ['\.gz$']
+      document_type: libvirt
+      tags: [openstack_backend_service, virtualization, libvirt]
+
+output:
+  logstash:
+    enabled: true
+    hosts:
+      - network2:5044
+    index: filebeat
+    bulk_max_size: 50

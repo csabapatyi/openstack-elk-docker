@@ -1,0 +1,6 @@
+http.host: "0.0.0.0"
+path.data: /usr/share/logstash/data/
+path.config: /usr/share/logstash/pipeline/
+config.reload.automatic: true
+xpack.monitoring.enabled: false
+xpack.monitoring.elasticsearch.url: http://elasticsearch1:9200

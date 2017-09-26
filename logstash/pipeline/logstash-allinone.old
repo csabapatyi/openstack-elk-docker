@@ -1,0 +1,24 @@
+input {
+	beats {
+	 port => 5044
+      } 
+    }
+filter {
+    grok {
+      match => { "message" => "(?m)^%{TIMESTAMP_ISO8601:date}\s+\d+\s+(?<loglevel>AUDIT|CRITICAL|DEBUG|INFO|TRACE|WARNING|ERROR)\s(?<module>\S+).*$" }
+    }
+    if [module] == "iso8601.iso8601" {
+      drop {}
+    }    
+}
+
+
+output {
+        elasticsearch {
+          hosts => "10.10.10.62:9200"
+          sniffing => true
+          manage_template => false
+          index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
+          document_type => "%{[@metadata][type]}"
+        }
+    }
